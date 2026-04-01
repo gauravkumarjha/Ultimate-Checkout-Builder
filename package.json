@@ -1,0 +1,17 @@
+{
+  "name": "shopify-checkout-saas",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "extensions/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @saas/server",
+    "dev:server": "npm run dev --workspace @saas/server",
+    "dev:admin": "npm run dev --workspace @saas/admin",
+    "dev:extension": "npm run dev --workspace @saas/checkout-extension",
+    "build": "npm run build --workspaces",
+    "typecheck": "npm run typecheck --workspaces"
+  }
+}

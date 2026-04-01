@@ -1,0 +1,69 @@
+import { execute } from "./client";
+
+export async function bootstrapDatabase(): Promise<void> {
+  await execute(`
+    CREATE TABLE IF NOT EXISTS shops (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      shop_domain VARCHAR(255) NOT NULL,
+      shop_name VARCHAR(255) NOT NULL DEFAULT '',
+      access_token TEXT NULL,
+      scope TEXT NOT NULL DEFAULT '',
+      installed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      is_active TINYINT(1) NOT NULL DEFAULT 1,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_shops_shop_domain (shop_domain)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
+  await execute(`
+    CREATE TABLE IF NOT EXISTS settings (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      shop_id BIGINT UNSIGNED NOT NULL,
+      review_config JSON NOT NULL,
+      timer_config JSON NOT NULL,
+      custom_fields JSON NOT NULL,
+      css TEXT NULL,
+      translations JSON NOT NULL,
+      payment_config JSON NOT NULL,
+      feature_flags JSON NOT NULL,
+      config_backup JSON NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_settings_shop_id (shop_id),
+      CONSTRAINT fk_settings_shop_id FOREIGN KEY (shop_id) REFERENCES shops(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
+  await execute(`
+    CREATE TABLE IF NOT EXISTS subscriptions (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      shop_id BIGINT UNSIGNED NOT NULL,
+      status ENUM('active', 'cancelled', 'trial') NOT NULL DEFAULT 'trial',
+      trial_end TIMESTAMP NULL DEFAULT NULL,
+      billing_cycle VARCHAR(20) NOT NULL DEFAULT 'monthly',
+      charge_id VARCHAR(255) NULL,
+      confirmation_url TEXT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_subscriptions_shop_id (shop_id),
+      CONSTRAINT fk_subscriptions_shop_id FOREIGN KEY (shop_id) REFERENCES shops(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
+  await execute(`
+    CREATE TABLE IF NOT EXISTS webhook_events (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      topic VARCHAR(100) NOT NULL,
+      shop_domain VARCHAR(255) NOT NULL,
+      payload JSON NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      KEY idx_webhook_events_shop_domain (shop_domain),
+      KEY idx_webhook_events_topic (topic)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+}

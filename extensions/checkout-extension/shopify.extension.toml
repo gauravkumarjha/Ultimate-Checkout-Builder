@@ -1,0 +1,10 @@
+name = "checkout-enhancements"
+type = "checkout_ui_extension"
+api_version = "2025-04"
+
+[[extensions.targeting]]
+target = "purchase.checkout.block.render"
+module = "./src/Checkout.tsx"
+
+[capabilities]
+api_access = true
