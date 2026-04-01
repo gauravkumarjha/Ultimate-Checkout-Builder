@@ -8,7 +8,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@saas/shared": "workspace:*",
+    "@saas/shared": "file:../../packages/shared",
     "@shopify/app-bridge": "^4.1.1",
     "@shopify/app-bridge-utils": "^4.1.1",
     "react": "^19.1.0",
