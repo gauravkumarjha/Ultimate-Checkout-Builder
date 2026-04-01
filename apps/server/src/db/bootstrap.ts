@@ -7,7 +7,7 @@ export async function bootstrapDatabase(): Promise<void> {
       shop_domain VARCHAR(255) NOT NULL,
       shop_name VARCHAR(255) NOT NULL DEFAULT '',
       access_token TEXT NULL,
-      scope TEXT NOT NULL DEFAULT '',
+      scope VARCHAR(1000) NOT NULL DEFAULT '',
       installed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       is_active TINYINT(1) NOT NULL DEFAULT 1,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
