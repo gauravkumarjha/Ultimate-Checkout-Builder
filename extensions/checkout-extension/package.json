@@ -9,6 +9,7 @@
   "dependencies": {
     "@saas/shared": "file:../../packages/shared",
     "@shopify/ui-extensions-react": "^2025.7.1",
+    "react-reconciler": "0.29.0",
     "react": "^19.1.0"
   },
   "devDependencies": {
