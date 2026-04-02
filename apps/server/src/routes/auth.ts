@@ -54,6 +54,7 @@ authRouter.get("/callback", async (req, res) => {
     shopName: shopInfo.name,
     accessToken,
     scope: appConfig.scopes.join(","),
+    plan: shopInfo.planName,
     isActive: true
   });
 

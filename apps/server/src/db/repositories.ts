@@ -9,6 +9,7 @@ export type ShopRow = {
   shop_name: string;
   access_token: string | null;
   scope: string;
+  plan: string;
   installed_at: string;
   is_active: number | boolean;
 };
@@ -70,7 +71,7 @@ async function getShopId(shopDomain: string): Promise<string | null> {
 
 async function getShopRowById(shopId: string): Promise<ShopRow | null> {
   const rows = await select<Omit<ShopRow, "access_token"> & { access_token: string | null }>(
-    "SELECT id, shop_domain, shop_name, access_token, scope, installed_at, is_active FROM shops WHERE id = ? LIMIT 1",
+    "SELECT id, shop_domain, shop_name, access_token, scope, plan, installed_at, is_active FROM shops WHERE id = ? LIMIT 1",
     [shopId]
   );
   const row = rows[0];
@@ -86,24 +87,26 @@ export async function upsertShop(input: {
   shopName: string;
   accessToken: string;
   scope: string;
+  plan: string;
   isActive?: boolean;
 }): Promise<ShopRow> {
   await execute(
     `
-      INSERT INTO shops (shop_domain, shop_name, access_token, scope, is_active, installed_at, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, NOW(), NOW(), NOW())
+      INSERT INTO shops (shop_domain, shop_name, access_token, scope, plan, is_active, installed_at, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())
       ON DUPLICATE KEY UPDATE
         shop_name = VALUES(shop_name),
         access_token = VALUES(access_token),
         scope = VALUES(scope),
+        plan = VALUES(plan),
         is_active = VALUES(is_active),
         updated_at = NOW()
     `,
-    [input.shopDomain, input.shopName, encryptToken(input.accessToken), input.scope, input.isActive ?? true ? 1 : 0]
+    [input.shopDomain, input.shopName, encryptToken(input.accessToken), input.scope, input.plan, input.isActive ?? true ? 1 : 0]
   );
 
   const rows = await select<ShopRow>(
-    "SELECT id, shop_domain, shop_name, access_token, scope, installed_at, is_active FROM shops WHERE shop_domain = ? LIMIT 1",
+    "SELECT id, shop_domain, shop_name, access_token, scope, plan, installed_at, is_active FROM shops WHERE shop_domain = ? LIMIT 1",
     [input.shopDomain]
   );
   const row = rows[0];
@@ -155,7 +158,7 @@ export async function updateShopDetails(input: {
 
 export async function getShop(shopDomain: string): Promise<ShopRow | null> {
   const rows = await select<ShopRow>(
-    "SELECT id, shop_domain, shop_name, access_token, scope, installed_at, is_active FROM shops WHERE shop_domain = ? LIMIT 1",
+    "SELECT id, shop_domain, shop_name, access_token, scope, plan, installed_at, is_active FROM shops WHERE shop_domain = ? LIMIT 1",
     [shopDomain]
   );
   const row = rows[0];

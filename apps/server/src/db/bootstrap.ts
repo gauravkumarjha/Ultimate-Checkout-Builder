@@ -8,6 +8,7 @@ export async function bootstrapDatabase(): Promise<void> {
       shop_name VARCHAR(255) NOT NULL DEFAULT '',
       access_token TEXT NULL,
       scope VARCHAR(1000) NOT NULL DEFAULT '',
+      plan VARCHAR(64) NOT NULL DEFAULT 'unknown',
       installed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       is_active TINYINT(1) NOT NULL DEFAULT 1,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

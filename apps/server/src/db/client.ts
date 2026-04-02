@@ -12,10 +12,10 @@ export const pool = mysql.createPool({
 });
 
 export async function select<T = Record<string, unknown>>(sql: string, values: unknown[] = []): Promise<T[]> {
-  const [rows] = await pool.query(sql, values);
+  const [rows] = await pool.query(sql, values as any[]);
   return rows as T[];
 }
 
 export async function execute(sql: string, values: unknown[] = []): Promise<void> {
-  await pool.execute(sql, values);
+  await pool.execute(sql, values as any[]);
 }

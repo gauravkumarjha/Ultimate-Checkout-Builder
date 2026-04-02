@@ -11,7 +11,7 @@
     "dev:server": "npm run dev --workspace @saas/server",
     "dev:admin": "npm run dev --workspace @saas/admin",
     "dev:extension": "npm run dev --workspace @saas/checkout-extension",
-    "build": "npm run build --workspaces",
-    "typecheck": "npm run typecheck --workspaces"
+    "build": "npm run build --workspace @saas/shared && npm run build --workspace @saas/server && npm run build --workspace @saas/admin && npm run build --workspace @saas/checkout-extension",
+    "typecheck": "npm run typecheck --workspace @saas/shared && npm run typecheck --workspace @saas/server && npm run typecheck --workspace @saas/admin && npm run typecheck --workspace @saas/checkout-extension"
   }
 }

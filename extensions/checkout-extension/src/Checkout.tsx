@@ -2,13 +2,13 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Banner,
   BlockStack,
-  Card,
   Checkbox,
   Image,
   InlineStack,
   Select,
   Text,
   TextField,
+  View,
   reactExtension,
   useAppMetafields,
   useApplyAttributeChange
@@ -74,12 +74,12 @@ function ReviewSection({
   const visibleReviews = layout === "slider" ? [reviews[activeIndex]] : reviews;
 
   return (
-    <Card padding="base">
+    <View>
       <BlockStack spacing="base">
         <Text emphasis="bold">{title ?? "Customer reviews"}</Text>
         <BlockStack spacing="base">
           {visibleReviews.map((review: ReviewItem) => (
-            <Card key={review.id} padding="base">
+            <View key={review.id}>
               <InlineStack spacing="base" blockAlignment="center">
                 <Image source={review.imageUrl} description={review.customerName} />
                 <BlockStack spacing="tight">
@@ -89,11 +89,11 @@ function ReviewSection({
                   {allowHalfStars ? <Text appearance="subdued">Half-star ratings enabled</Text> : null}
                 </BlockStack>
               </InlineStack>
-            </Card>
+            </View>
           ))}
         </BlockStack>
       </BlockStack>
-    </Card>
+    </View>
   );
 }
 
@@ -113,13 +113,13 @@ function CountdownTimer({ timer }: { timer: NonNullable<FrontendConfig["timer"]>
   const seconds = String(remaining % 60).padStart(2, "0");
 
   return (
-    <Card padding="base">
+    <View>
       <BlockStack spacing="tight">
         <Text emphasis="bold">{timer.label ?? "Offer ends in"}</Text>
         <Text>{`${hours}:${minutes}:${seconds}`}</Text>
         <Text appearance="subdued">Reset behavior: {timer.resetBehavior}</Text>
       </BlockStack>
-    </Card>
+    </View>
   );
 }
 
@@ -135,14 +135,14 @@ function CustomFields({
   const applyAttributeChange = useApplyAttributeChange();
 
   return (
-    <Card padding="base">
+    <View>
       <BlockStack spacing="base">
         <Text emphasis="bold">{config.heading ?? "Additional checkout fields"}</Text>
         {config.fields.map((field: CustomField) => (
           <BlockStack key={field.id} spacing="tight">
             {field.type === "checkbox" ? (
               <Checkbox
-                onChange={async (checked) => {
+                onChange={async (checked: boolean) => {
                   await applyAttributeChange({
                     type: "updateAttribute",
                     key: `checkout_saas_${field.id}`,
@@ -157,7 +157,7 @@ function CustomFields({
               <Select
                 label={resolveTranslation(translations, language, `field_${field.id}_label`, field.label)}
                 options={(field.validation?.options ?? ["Option 1", "Option 2"]).map((option) => ({ label: option, value: option }))}
-                onChange={async (value) => {
+                onChange={async (value: string) => {
                   await applyAttributeChange({
                     type: "updateAttribute",
                     key: `checkout_saas_${field.id}`,
@@ -171,7 +171,7 @@ function CustomFields({
                 label={resolveTranslation(translations, language, `field_${field.id}_label`, field.label)}
                 placeholder={resolveTranslation(translations, language, `field_${field.id}_placeholder`, field.placeholder ?? "")}
                 required={field.required}
-                onChange={async (value) => {
+                onChange={async (value: string) => {
                   await applyAttributeChange({
                     type: "updateAttribute",
                     key: `checkout_saas_${field.id}`,
@@ -183,7 +183,7 @@ function CustomFields({
           </BlockStack>
         ))}
       </BlockStack>
-    </Card>
+    </View>
   );
 }
 
@@ -195,7 +195,7 @@ export default reactExtension("purchase.checkout.block.render", () => {
   const activeLanguage = normalizedConfig?.translations?.defaultLanguage ?? "en";
 
   if (!normalizedConfig) {
-    return null;
+    return <View />;
   }
 
   const localizedReviewTitle = resolveTranslation(
