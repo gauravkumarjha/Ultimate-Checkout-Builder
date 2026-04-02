@@ -1,4 +1,4 @@
-import { createApp } from "@shopify/app-bridge";
+import createApp from "@shopify/app-bridge";
 
 export type AppBridgeState = {
   app: ReturnType<typeof createApp>;
