@@ -9,8 +9,8 @@
   },
   "dependencies": {
     "@saas/shared": "file:../../packages/shared",
-    "@shopify/app-bridge": "^4.1.1",
-    "@shopify/app-bridge-utils": "^4.1.1",
+    "@shopify/app-bridge": "^3.7.10",
+    "@shopify/app-bridge-utils": "^3.5.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
