@@ -13,7 +13,7 @@ Production-oriented monorepo for a multi-store Shopify app with:
 - `packages/shared`: shared settings types and validation
 - `apps/server`: Express API, OAuth, webhooks, billing, MySQL persistence, metafield sync
 - `apps/admin`: embedded React admin UI
-- `extensions/checkout-extension`: Checkout UI extension that renders merchant-configured modules
+- `extensions/checkout-enhancements`: Checkout UI extension that renders merchant-configured modules
 
 ## Data model
 
