@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, {useEffect, useState} from "react";
 import {
   Banner,
   BlockStack,
@@ -13,8 +13,8 @@ import {
   useAppMetafields,
   useApplyAttributeChange
 } from "@shopify/ui-extensions-react/checkout";
-import type { CustomField, FrontendConfig, ReviewItem } from "@saas/shared";
-import { minutesToSeconds, resolveTranslation } from "@saas/shared";
+import type {CustomField, FrontendConfig, ReviewItem} from "@saas/shared";
+import {minutesToSeconds, resolveTranslation} from "@saas/shared";
 
 type MetafieldEntry = {
   namespace?: string;
@@ -40,14 +40,41 @@ function readConfig(entries: unknown): FrontendConfig | null {
   }
 }
 
-function Stars({ value }: { value: number }) {
+function Stars({value}: {value: number}) {
   const filled = Math.round(value);
   return (
     <InlineStack spacing="extraTight">
-      {Array.from({ length: 5 }).map((_, index) => (
-        <Text key={index}>{index < filled ? "★" : "☆"}</Text>
+      {Array.from({length: 5}).map((_, index) => (
+        <Text key={index} emphasis={index < filled ? "bold" : undefined}>
+          {index < filled ? "★" : "☆"}
+        </Text>
       ))}
     </InlineStack>
+  );
+}
+
+function FeatureShell({
+  title,
+  description,
+  enabled,
+  children
+}: {
+  title: string;
+  description: string;
+  enabled: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <View>
+      <BlockStack spacing="base">
+        <InlineStack spacing="base" blockAlignment="center">
+          <Text emphasis="bold">{title}</Text>
+          <Banner status={enabled ? "success" : "warning"} title={enabled ? "Enabled" : "Disabled"} />
+        </InlineStack>
+        <Text>{description}</Text>
+        {children}
+      </BlockStack>
+    </View>
   );
 }
 
@@ -58,68 +85,90 @@ function ReviewSection({
   speedMs,
   allowHalfStars,
   title
-}: NonNullable<FrontendConfig["reviews"]> & { allowHalfStars?: boolean; title?: string }) {
+}: NonNullable<FrontendConfig["reviews"]> & {allowHalfStars?: boolean; title?: string}) {
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     if (!autoplay || layout !== "slider" || reviews.length < 2) {
       return;
     }
-    const id = setInterval(() => {
+
+    const intervalId = setInterval(() => {
       setActiveIndex((current) => (current + 1) % reviews.length);
     }, speedMs);
-    return () => clearInterval(id);
+
+    return () => clearInterval(intervalId);
   }, [autoplay, layout, reviews.length, speedMs]);
 
   const visibleReviews = layout === "slider" ? [reviews[activeIndex]] : reviews;
 
   return (
-    <View>
+    <FeatureShell
+      title={title ?? "Customer reviews"}
+      description={`Layout: ${layout} · Autoplay: ${autoplay ? "On" : "Off"} · Half-stars: ${allowHalfStars ? "Yes" : "No"}`}
+      enabled
+    >
       <BlockStack spacing="base">
-        <Text emphasis="bold">{title ?? "Customer reviews"}</Text>
-        <BlockStack spacing="base">
-          {visibleReviews.map((review: ReviewItem) => (
-            <View key={review.id}>
+        {visibleReviews.map((review: ReviewItem) => (
+          <View key={review.id}>
+            <BlockStack spacing="tight">
               <InlineStack spacing="base" blockAlignment="center">
-                <Image source={review.imageUrl} description={review.customerName} />
+                {review.imageUrl ? (
+                  <Image source={review.imageUrl} description={review.customerName} />
+                ) : null}
                 <BlockStack spacing="tight">
                   <Text emphasis="bold">{review.customerName}</Text>
                   <Stars value={review.starRating} />
-                  <Text>{review.description}</Text>
-                  {allowHalfStars ? <Text appearance="subdued">Half-star ratings enabled</Text> : null}
                 </BlockStack>
               </InlineStack>
-            </View>
-          ))}
-        </BlockStack>
+              <Text>{review.description}</Text>
+              {allowHalfStars ? <Text appearance="subdued">Half-star ratings enabled</Text> : null}
+            </BlockStack>
+          </View>
+        ))}
       </BlockStack>
-    </View>
+    </FeatureShell>
   );
 }
 
-function CountdownTimer({ timer }: { timer: NonNullable<FrontendConfig["timer"]> & { label?: string } }) {
-  const [remaining, setRemaining] = useState(() => minutesToSeconds(timer.durationValue, timer.durationUnit));
+function CountdownTimer({
+  timer
+}: {
+  timer: NonNullable<FrontendConfig["timer"]> & {label?: string};
+}) {
+  const [remaining, setRemaining] = useState(() =>
+    minutesToSeconds(timer.durationValue, timer.durationUnit)
+  );
 
   useEffect(() => {
-    if (!timer.enabled) return;
-    const id = setInterval(() => {
+    if (!timer.enabled) {
+      return;
+    }
+
+    setRemaining(minutesToSeconds(timer.durationValue, timer.durationUnit));
+    const intervalId = setInterval(() => {
       setRemaining((current) => Math.max(current - 1, 0));
     }, 1000);
-    return () => clearInterval(id);
-  }, [timer.enabled]);
+
+    return () => clearInterval(intervalId);
+  }, [timer.enabled, timer.durationValue, timer.durationUnit]);
 
   const hours = String(Math.floor(remaining / 3600)).padStart(2, "0");
   const minutes = String(Math.floor((remaining % 3600) / 60)).padStart(2, "0");
   const seconds = String(remaining % 60).padStart(2, "0");
 
   return (
-    <View>
-      <BlockStack spacing="tight">
-        <Text emphasis="bold">{timer.label ?? "Offer ends in"}</Text>
-        <Text>{`${hours}:${minutes}:${seconds}`}</Text>
-        <Text appearance="subdued">Reset behavior: {timer.resetBehavior}</Text>
-      </BlockStack>
-    </View>
+    <FeatureShell
+      title={timer.label ?? "Offer ends in"}
+      description={`Duration: ${timer.durationValue} ${timer.durationUnit} · Reset: ${timer.resetBehavior}`}
+      enabled
+    >
+      <View>
+        <Banner status="info" title="Timer preview">
+          {`${hours}:${minutes}:${seconds}`}
+        </Banner>
+      </View>
+    </FeatureShell>
   );
 }
 
@@ -128,16 +177,19 @@ function CustomFields({
   translations,
   language
 }: {
-  config: NonNullable<FrontendConfig["customFields"]> & { heading?: string };
+  config: NonNullable<FrontendConfig["customFields"]> & {heading?: string};
   translations: FrontendConfig["translations"];
   language: string;
 }) {
   const applyAttributeChange = useApplyAttributeChange();
 
   return (
-    <View>
+    <FeatureShell
+      title={config.heading ?? "Additional checkout fields"}
+      description="Shipping and billing fields render here when enabled from the dashboard."
+      enabled
+    >
       <BlockStack spacing="base">
-        <Text emphasis="bold">{config.heading ?? "Additional checkout fields"}</Text>
         {config.fields.map((field: CustomField) => (
           <BlockStack key={field.id} spacing="tight">
             {field.type === "checkbox" ? (
@@ -150,13 +202,27 @@ function CustomFields({
                   });
                 }}
               >
-                {resolveTranslation(translations, language, `field_${field.id}_label`, field.label)}
+                {resolveTranslation(
+                  translations,
+                  language,
+                  `field_${field.id}_label`,
+                  field.label
+                )}
               </Checkbox>
             ) : null}
+
             {field.type === "dropdown" ? (
               <Select
-                label={resolveTranslation(translations, language, `field_${field.id}_label`, field.label)}
-                options={(field.validation?.options ?? ["Option 1", "Option 2"]).map((option) => ({ label: option, value: option }))}
+                label={resolveTranslation(
+                  translations,
+                  language,
+                  `field_${field.id}_label`,
+                  field.label
+                )}
+                options={(field.validation?.options ?? ["Option 1", "Option 2"]).map((option) => ({
+                  label: option,
+                  value: option
+                }))}
                 onChange={async (value: string) => {
                   await applyAttributeChange({
                     type: "updateAttribute",
@@ -166,11 +232,23 @@ function CustomFields({
                 }}
               />
             ) : null}
-            {field.type === "text" || field.type === "number" ? (
+
+            {(field.type === "text" || field.type === "number") ? (
               <TextField
-                label={resolveTranslation(translations, language, `field_${field.id}_label`, field.label)}
-                placeholder={resolveTranslation(translations, language, `field_${field.id}_placeholder`, field.placeholder ?? "")}
+                label={resolveTranslation(
+                  translations,
+                  language,
+                  `field_${field.id}_label`,
+                  field.label
+                )}
+                placeholder={resolveTranslation(
+                  translations,
+                  language,
+                  `field_${field.id}_placeholder`,
+                  field.placeholder ?? ""
+                )}
                 required={field.required}
+                type={field.type === "number" ? "number" : "text"}
                 onChange={async (value: string) => {
                   await applyAttributeChange({
                     type: "updateAttribute",
@@ -183,101 +261,134 @@ function CustomFields({
           </BlockStack>
         ))}
       </BlockStack>
-    </View>
+    </FeatureShell>
   );
 }
 
-export default reactExtension("purchase.checkout.block.render", () => {
+function App() {
   const appMetafields = useAppMetafields();
   const config = readConfig(appMetafields);
+  const activeLanguage = config?.translations?.defaultLanguage ?? "en";
 
-  const normalizedConfig = useMemo(() => config, [config]);
-  const activeLanguage = normalizedConfig?.translations?.defaultLanguage ?? "en";
-
-  if (!normalizedConfig) {
+  if (!config) {
     return (
       <View>
-        <Banner status="warning" title="Checkout features not configured yet">
-          Open the app dashboard, enable a feature, then click Sync Checkout to load reviews, timer, fields, CSS, or translations here.
+        <Banner status="warning" title="Checkout Builder ECS">
+          Open the app dashboard, enable a feature, then click Sync Checkout to
+          load the block here.
         </Banner>
       </View>
     );
   }
 
   const localizedReviewTitle = resolveTranslation(
-    normalizedConfig.translations,
+    config.translations,
     activeLanguage,
     "review_title",
     "Customer reviews"
   );
   const localizedTimerText = resolveTranslation(
-    normalizedConfig.translations,
+    config.translations,
     activeLanguage,
     "timer_text",
     "Offer ends in"
   );
   const localizedFieldHeading = resolveTranslation(
-    normalizedConfig.translations,
+    config.translations,
     activeLanguage,
     "section_heading",
     "Additional checkout fields"
   );
-  const localizedReviews = normalizedConfig.reviews?.reviews.map((review) => ({
-    ...review,
-    customerName: resolveTranslation(
-      normalizedConfig.translations,
-      activeLanguage,
-      `review_${review.id}_customer_name`,
-      review.customerName
-    ),
-    description: resolveTranslation(
-      normalizedConfig.translations,
-      activeLanguage,
-      `review_${review.id}_description`,
-      review.description
-    )
-  }));
+
+  const localizedReviews =
+    config.reviews?.reviews.map((review) => ({
+      ...review,
+      customerName: resolveTranslation(
+        config.translations,
+        activeLanguage,
+        `review_${review.id}_customer_name`,
+        review.customerName
+      ),
+      description: resolveTranslation(
+        config.translations,
+        activeLanguage,
+        `review_${review.id}_description`,
+        review.description
+      )
+    })) ?? [];
+
+  const enabledFeatures = [
+    config.reviews?.enabled,
+    config.timer?.enabled,
+    config.customFields?.enabled,
+    config.css?.enabled,
+    config.translations?.enabled,
+    config.payment?.enabled
+  ].filter(Boolean).length;
 
   return (
     <BlockStack spacing="loose">
-      <Banner status="info" title="Checkout Builder extension active">
-        This block is loaded from the checkout editor. If a section is enabled in the dashboard and synced, it appears below.
+      <Banner status="success" title="Checkout Builder ECS">
+        Extension is loaded in the checkout editor. Enable modules in the dashboard,
+        save them to the database, then sync to show the block here.
       </Banner>
-      {normalizedConfig.reviews?.enabled ? (
+      <Text appearance="subdued">Enabled features: {enabledFeatures}/6</Text>
+
+      {config.reviews?.enabled ? (
         <ReviewSection
-          {...normalizedConfig.reviews}
-          reviews={localizedReviews ?? normalizedConfig.reviews.reviews}
-          allowHalfStars={normalizedConfig.reviews.allowHalfStars}
+          {...config.reviews}
+          reviews={localizedReviews}
+          allowHalfStars={config.reviews.allowHalfStars}
           title={localizedReviewTitle}
         />
       ) : null}
-      {normalizedConfig.timer?.enabled ? (
-        <CountdownTimer timer={{ ...normalizedConfig.timer, label: localizedTimerText }} />
+
+      {config.timer?.enabled ? (
+        <CountdownTimer timer={{...config.timer, label: localizedTimerText}} />
       ) : null}
-      {normalizedConfig.customFields?.enabled ? (
+
+      {config.customFields?.enabled ? (
         <CustomFields
-          config={{ ...normalizedConfig.customFields, heading: localizedFieldHeading }}
-          translations={normalizedConfig.translations}
+          config={{...config.customFields, heading: localizedFieldHeading}}
+          translations={config.translations}
           language={activeLanguage}
         />
       ) : null}
-      {normalizedConfig.payment?.enabled ? (
+
+      {config.payment?.enabled ? (
         <Banner status="warning" title="Payment method ordering">
-          {normalizedConfig.payment.plusOnly
-            ? "This shop uses a Plus-gated fallback for payment ordering."
-            : "Shopify restrictions apply; using merchant display preferences only."}
+          {config.payment.plusOnly
+            ? "Payment ordering is Plus-gated for this shop."
+            : "Using merchant display preferences for payment ordering."}
         </Banner>
       ) : null}
-      {!normalizedConfig.reviews?.enabled &&
-      !normalizedConfig.timer?.enabled &&
-      !normalizedConfig.customFields?.enabled &&
-      !normalizedConfig.css?.enabled &&
-      !normalizedConfig.translations?.enabled &&
-      !normalizedConfig.payment?.enabled ? (
+
+      {config.css?.enabled ? (
+        <Banner status="info" title="Custom CSS">
+          CSS has been enabled from the dashboard and will be applied when the checkout
+          extension renders.
+        </Banner>
+      ) : null}
+
+      {config.translations?.enabled ? (
+        <Banner status="info" title="Translations">
+          Translation strings are synced and active for this checkout.
+        </Banner>
+      ) : null}
+
+      {!config.reviews?.enabled &&
+      !config.timer?.enabled &&
+      !config.customFields?.enabled &&
+      !config.css?.enabled &&
+      !config.translations?.enabled &&
+      !config.payment?.enabled ? (
         <Banner status="warning" title="No features enabled">
-          Turn on one or more modules in the dashboard and sync again to see live content here.
+          Turn on at least one module in the dashboard and sync again to show live
+          content here.
         </Banner>
       ) : null}
     </BlockStack>
   );
-});
+}
+
+export default reactExtension("purchase.checkout.block.render", () => <App />);
