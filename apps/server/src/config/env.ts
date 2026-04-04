@@ -3,9 +3,19 @@ import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
 
-const rootEnvPath = path.resolve(process.cwd(), "..", "..", ".env");
-if (fs.existsSync(rootEnvPath)) {
-  dotenv.config({ path: rootEnvPath });
+const envCandidates = [
+  path.resolve(process.cwd(), ".env"),
+  path.resolve(process.cwd(), "..", ".env"),
+  path.resolve(process.cwd(), "..", "..", ".env"),
+  path.resolve(process.cwd(), "apps/server/.env"),
+  path.resolve(process.cwd(), "apps/.env")
+];
+
+for (const envPath of envCandidates) {
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+    break;
+  }
 }
 
 const normalizedProcessEnv = {
