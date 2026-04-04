@@ -57,6 +57,16 @@ textarea { min-height: 120px; resize: vertical; }
 .feature-tile { width: 100%; text-align: left; border: 1px solid var(--border); background: rgba(255,255,255,0.8); border-radius: 18px; padding: 16px; cursor: pointer; box-shadow: 0 10px 30px rgba(31, 26, 23, 0.05); transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease; }
 .feature-tile:hover { transform: translateY(-2px); border-color: rgba(31, 122, 101, 0.35); box-shadow: 0 14px 34px rgba(31, 26, 23, 0.08); }
 .feature-tile--on { background: linear-gradient(180deg, rgba(31, 122, 101, 0.08), rgba(255,255,255,0.9)); }
+.feature-tile__button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+}
 .feature-tile__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .feature-tile strong { font-size: 18px; letter-spacing: -0.02em; }
 .preview-card strong, .section-head h3 { font-size: 18px; letter-spacing: -0.02em; }
@@ -76,6 +86,16 @@ textarea { min-height: 120px; resize: vertical; }
   gap: 6px;
   transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
+.nav-tile__button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  display: grid;
+  gap: 6px;
+  cursor: pointer;
+}
 .nav-tile:hover { transform: translateY(-2px); border-color: rgba(31, 122, 101, 0.35); box-shadow: 0 14px 34px rgba(31, 26, 23, 0.08); }
 .nav-tile--active { background: linear-gradient(180deg, rgba(31, 122, 101, 0.08), rgba(255,255,255,0.95)); border-color: rgba(31, 122, 101, 0.28); }
 .nav-tile strong { font-size: 16px; letter-spacing: -0.02em; }
@@ -88,6 +108,7 @@ textarea { min-height: 120px; resize: vertical; }
 .review-img { width: 100%; height: 120px; object-fit: cover; border-radius: 12px; margin-bottom: 10px; }
 .timer { display: inline-flex; gap: 10px; padding: 14px 18px; border-radius: 18px; background: #0f172a; color: #fff; font-variant-numeric: tabular-nums; }
 .field-row { display: grid; grid-template-columns: 1fr 120px 120px 100px; gap: 10px; align-items: end; }
+.status-grid { display: grid; gap: 8px; margin-top: 12px; color: var(--text); }
 @media (max-width: 1100px) {
   .hero, .grid-2, .grid-3, .field-row, .nav-grid { grid-template-columns: 1fr; }
 }
