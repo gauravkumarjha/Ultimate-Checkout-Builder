@@ -6,8 +6,17 @@ application_url = "https://checkout.easycodingschool.com"
 embedded = true
 handle = "checkout-builder-3"
 
+[access_scopes]
+scopes = "write_checkouts,read_checkouts,read_customers,write_customers,read_metaobject_definitions,write_metaobject_definitions,read_metaobjects,write_metaobjects,read_products,write_products,customer_read_metaobjects"
+use_legacy_install_flow = true
+
+[auth]
+redirect_urls = [
+  "https://checkout.easycodingschool.com/auth/callback",
+]
+
 [webhooks]
-api_version = "2025-07"
+api_version = "2026-01"
 
 [build]
 automatically_update_urls_on_dev = true

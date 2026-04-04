@@ -1,5 +1,7 @@
-name = "checkout-builder-3"
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
 client_id = "1eaabde794d182107e7f613b2665aab5"
+name = "checkout-builder-3"
 application_url = "https://checkout.easycodingschool.com"
 embedded = true
 handle = "checkout-builder-3"
@@ -14,7 +16,7 @@ redirect_urls = [
 ]
 
 [webhooks]
-api_version = "2025-07"
+api_version = "2026-01"
 
 [build]
 automatically_update_urls_on_dev = true
