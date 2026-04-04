@@ -75,6 +75,30 @@ async function main(): Promise<void> {
       </html>`);
   });
 
+  app.get("/preferences", (_req, res) => {
+    res.type("html").send(`<!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <title>Checkout Builder Preferences</title>
+          <style>
+            body { margin:0; min-height:100vh; display:grid; place-items:center; background:linear-gradient(180deg,#fcfaf6 0%,#f4efe7 100%); color:#1f1a17; font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+            .card { width:min(760px, calc(100vw - 32px)); background:#fff; border:1px solid rgba(31,26,23,.12); border-radius:24px; padding:28px; box-shadow:0 22px 60px rgba(31,26,23,.12); }
+            h1 { margin:0 0 12px; font-size:clamp(32px, 4vw, 56px); line-height:1.02; letter-spacing:-.05em; font-weight:800; }
+            p { margin:0; color:#6f665c; line-height:1.7; font-size:16px; }
+            code { background:#f4efe7; padding:2px 6px; border-radius:6px; }
+          </style>
+        </head>
+        <body>
+          <main class="card">
+            <h1>App Preferences</h1>
+            <p>This page is reserved for merchant-facing preferences for <code>Checkout Builder ECS</code>. You can route onboarding, help text, or feature defaults here later.</p>
+          </main>
+        </body>
+      </html>`);
+  });
+
   async function getTableCount(tableName: "shops" | "settings" | "subscriptions"): Promise<number> {
     const rows = await select<{ count: number }>(`SELECT COUNT(*) AS count FROM ${tableName}`);
     return rows[0]?.count ?? 0;
