@@ -7,7 +7,7 @@ handle = "checkout-enhancements"
 type = "ui_extension"
 
 [[extensions.targeting]]
-target = "purchase.checkout.block.render"
+target = "purchase.checkout.contact.render-after"
 module = "./src/Checkout.tsx"
 
 [extensions.capabilities]
