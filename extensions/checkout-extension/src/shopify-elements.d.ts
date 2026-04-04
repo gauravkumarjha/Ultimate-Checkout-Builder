@@ -5,6 +5,7 @@ declare module "preact" {
     interface IntrinsicElements {
       "s-banner": any;
       "s-block-stack": any;
+      "s-checkbox": any;
     }
   }
 }
