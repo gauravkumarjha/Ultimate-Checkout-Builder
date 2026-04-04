@@ -1,5 +1,18 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+import fs from "node:fs";
+import path from "node:path";
 import { z } from "zod";
+
+const dotenvPaths = [
+  path.resolve(process.cwd(), ".env"),
+  path.resolve(process.cwd(), "apps/server/.env"),
+];
+
+for (const dotenvPath of dotenvPaths) {
+  if (fs.existsSync(dotenvPath)) {
+    dotenv.config({ path: dotenvPath });
+  }
+}
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
