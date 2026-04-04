@@ -69,7 +69,7 @@ async function main(): Promise<void> {
         <body>
           <main class="card">
             <h1>App Proxy is live</h1>
-            <p>Storefront proxy is configured for <code>/apps/checkout-builder-3</code> and served from <code>/proxy</code>. ${shop ? `Shop: <code>${escapeHtml(shop)}</code>` : ""}</p>
+            <p>Storefront proxy is configured for <code>/apps/checkout-builder-ecs</code> and served from <code>/proxy</code>. ${shop ? `Shop: <code>${escapeHtml(shop)}</code>` : ""}</p>
           </main>
         </body>
       </html>`);
@@ -253,7 +253,7 @@ async function main(): Promise<void> {
                   <p class="muted" style="margin:0;">This extension is added in the Shopify Checkout Editor. In this dashboard you configure it, enable it, and sync its data.</p>
                   <p class="muted" style="margin:0;">Shopify URL context: <code>${escapeHtml(shopDomain)}</code></p>
                   <p class="footer-note" style="margin:0;">Host: ${escapeHtml(host)}</p>
-                  <p class="footer-note" style="margin:0;">App proxy: <code>/apps/checkout-builder-3</code> via <code>/proxy</code></p>
+                  <p class="footer-note" style="margin:0;">App proxy: <code>/apps/checkout-builder-ecs</code> via <code>/proxy</code></p>
                 </div>
               </div>
             </section>

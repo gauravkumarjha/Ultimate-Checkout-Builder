@@ -1,13 +1,13 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "1eaabde794d182107e7f613b2665aab5"
-name = "checkout-builder-3"
+name = "Checkout Builder ECS"
 application_url = "https://checkout.easycodingschool.com"
 embedded = true
-handle = "checkout-builder-3"
+handle = "checkout-builder-ecs"
 
 [access_scopes]
-scopes = "write_checkouts,read_checkouts,read_customers,write_customers,read_metaobject_definitions,write_metaobject_definitions,read_metaobjects,write_metaobjects,read_products,write_products,customer_read_metaobjects,unauthenticated_read_metaobjects,write_app_proxy"
+scopes = "write_checkouts,read_checkouts,read_customers,write_customers,read_metaobject_definitions,write_metaobject_definitions,read_metaobjects,write_metaobjects,read_products,write_products,customer_read_metaobjects"
 use_legacy_install_flow = true
 
 [auth]
@@ -16,9 +16,9 @@ redirect_urls = [
 ]
 
 [app_proxy]
-url = "/proxy"
+url = "https://checkout.easycodingschool.com"
 prefix = "apps"
-subpath = "checkout-builder-3"
+subpath = "checkout-builder-ecs"
 
 [webhooks]
 api_version = "2026-01"
