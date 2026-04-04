@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { appConfig, env } from "../config/env";
-import { createStateToken, verifyQueryHmac } from "../lib/hmac";
+import { createStateToken, readStateToken, verifyQueryHmac, verifyStateToken } from "../lib/hmac";
 import { buildInstallUrl, exchangeCodeForToken, fetchShopInfo, normalizeShopDomain, registerWebhooks } from "../lib/shopify";
 import { upsertShop, upsertSettings, upsertSubscription } from "../db/repositories";
 import { defaultCheckoutSettings } from "@saas/shared";
@@ -9,18 +9,13 @@ export const authRouter = Router();
 
 authRouter.get("/", async (req, res) => {
   const shop = normalizeShopDomain(String(req.query.shop ?? ""));
+  const host = String(req.query.host ?? "").trim();
   if (!shop) {
     res.status(400).send("Missing shop parameter");
     return;
   }
 
-  const state = createStateToken();
-  res.cookie("shopify_oauth_state", state, {
-    httpOnly: true,
-    secure: env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 10 * 60 * 1000
-  });
+  const state = createStateToken(shop, env.SHOPIFY_API_SECRET, host || undefined);
   res.redirect(buildInstallUrl(shop, state));
 });
 
@@ -28,7 +23,7 @@ authRouter.get("/callback", async (req, res) => {
   const shop = normalizeShopDomain(String(req.query.shop ?? ""));
   const code = String(req.query.code ?? "");
   const state = String(req.query.state ?? "");
-  const cookieState = req.cookies?.shopify_oauth_state;
+  const grantedScope = String(req.query.scope ?? appConfig.scopes.join(","));
   const callbackUrl = new URL(`https://${req.get("host")}${req.originalUrl}`);
 
   if (!shop || !code) {
@@ -41,10 +36,11 @@ authRouter.get("/callback", async (req, res) => {
     return;
   }
 
-  if (!cookieState || cookieState !== state) {
+  if (!verifyStateToken(state, env.SHOPIFY_API_SECRET, shop)) {
     res.status(400).send("Invalid OAuth state");
     return;
   }
+  const statePayload = readStateToken(state, env.SHOPIFY_API_SECRET, shop);
 
   const accessToken = await exchangeCodeForToken(shop, code);
   const shopInfo = await fetchShopInfo(shop, accessToken);
@@ -53,7 +49,7 @@ authRouter.get("/callback", async (req, res) => {
     shopDomain: shopInfo.myshopifyDomain,
     shopName: shopInfo.name,
     accessToken,
-    scope: appConfig.scopes.join(","),
+    scope: grantedScope,
     plan: shopInfo.planName,
     isActive: true
   });
@@ -68,6 +64,9 @@ authRouter.get("/callback", async (req, res) => {
 
   await registerWebhooks(shopInfo.myshopifyDomain, accessToken, env.APP_URL);
 
-  res.clearCookie("shopify_oauth_state");
-  res.redirect(`${env.APP_URL}/?shop=${encodeURIComponent(shopInfo.myshopifyDomain)}`);
+  const redirectParams = new URLSearchParams({ shop: shopInfo.myshopifyDomain });
+  if (statePayload?.host) {
+    redirectParams.set("host", statePayload.host);
+  }
+  res.redirect(`${env.APP_URL}/?${redirectParams.toString()}`);
 });

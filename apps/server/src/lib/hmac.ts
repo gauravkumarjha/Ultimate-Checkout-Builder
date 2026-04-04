@@ -37,6 +37,56 @@ export function verifyWebhookHmac(rawBody: Buffer, headerHmac: string | undefine
   return crypto.timingSafeEqual(expected, received);
 }
 
-export function createStateToken(): string {
-  return crypto.randomBytes(16).toString("hex");
+type OAuthStatePayload = {
+  nonce: string;
+  shop: string;
+  host?: string;
+  issuedAt: number;
+};
+
+export function createStateToken(shop: string, secret: string, host?: string): string {
+  const payload: OAuthStatePayload = {
+    nonce: crypto.randomBytes(16).toString("hex"),
+    shop,
+    host,
+    issuedAt: Date.now()
+  };
+
+  const payloadEncoded = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+  const signature = crypto.createHmac("sha256", secret).update(payloadEncoded).digest("base64url");
+  return `${payloadEncoded}.${signature}`;
+}
+
+export function verifyStateToken(token: string, secret: string, expectedShop: string): boolean {
+  return readStateToken(token, secret, expectedShop) !== null;
+}
+
+export function readStateToken(token: string, secret: string, expectedShop: string): OAuthStatePayload | null {
+  const [payloadEncoded, signature] = token.split(".");
+  if (!payloadEncoded || !signature) {
+    return null;
+  }
+
+  const expectedSignature = crypto.createHmac("sha256", secret).update(payloadEncoded).digest("base64url");
+  if (expectedSignature.length !== signature.length) {
+    return null;
+  }
+  if (!crypto.timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature))) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(Buffer.from(payloadEncoded, "base64url").toString("utf8")) as OAuthStatePayload;
+    if (!payload.shop || payload.shop !== expectedShop) {
+      return null;
+    }
+
+    const maxAgeMs = 10 * 60 * 1000;
+    if (Date.now() - payload.issuedAt > maxAgeMs) {
+      return null;
+    }
+    return payload;
+  } catch {
+    return null;
+  }
 }

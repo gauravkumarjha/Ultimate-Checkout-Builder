@@ -1,4 +1,5 @@
-api_version = "2025-04"
+api_version = "2025-07"
+uid = "67a7e6c9-2b73-442a-2b5b-d2748e4915e2fb2a58e4"
 
 [[extensions]]
 name = "checkout-enhancements"

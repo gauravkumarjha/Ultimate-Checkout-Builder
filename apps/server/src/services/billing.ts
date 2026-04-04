@@ -63,5 +63,5 @@ export async function isBillingActive(shop: string): Promise<boolean> {
   if (!subscription) {
     return false;
   }
-  return ["active", "trialing"].includes(subscription.status);
+  return ["active", "trialing", "trial"].includes(subscription.status);
 }

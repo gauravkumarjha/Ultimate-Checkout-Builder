@@ -69,6 +69,55 @@ async function getShopId(shopDomain: string): Promise<string | null> {
   return rows[0]?.id ?? null;
 }
 
+export async function ensureShopBootstrap(input: {
+  shopDomain: string;
+  shopName?: string;
+  status?: "active" | "cancelled" | "trial" | string;
+  billingCycle?: string;
+}): Promise<void> {
+  await execute(
+    `
+      INSERT INTO shops (
+        shop_domain,
+        shop_name,
+        access_token,
+        scope,
+        plan,
+        is_active,
+        installed_at,
+        created_at,
+        updated_at
+      )
+      VALUES (?, ?, NULL, '', 'unknown', 1, NOW(), NOW(), NOW())
+      ON DUPLICATE KEY UPDATE
+        shop_name = COALESCE(VALUES(shop_name), shop_name),
+        is_active = 1,
+        updated_at = NOW()
+    `,
+    [input.shopDomain, input.shopName ?? input.shopDomain]
+  );
+
+  const shopId = await getShopId(input.shopDomain);
+  if (!shopId) {
+    throw new Error(`Failed to create shop bootstrap row for ${input.shopDomain}`);
+  }
+
+  const settingsRows = await select<{ id: string }>("SELECT id FROM settings WHERE shop_id = ? LIMIT 1", [shopId]);
+  if (!settingsRows[0]) {
+    await upsertSettings(input.shopDomain, defaultCheckoutSettings);
+  }
+
+  const subscriptionRows = await select<{ id: string }>("SELECT id FROM subscriptions WHERE shop_id = ? LIMIT 1", [shopId]);
+  if (!subscriptionRows[0]) {
+    await upsertSubscription({
+      shopDomain: input.shopDomain,
+      status: input.status ?? "trial",
+      billingCycle: input.billingCycle ?? "monthly",
+      trialEnd: new Date(Date.now() + env.BILLING_TRIAL_DAYS * 24 * 60 * 60 * 1000).toISOString()
+    });
+  }
+}
+
 async function getShopRowById(shopId: string): Promise<ShopRow | null> {
   const rows = await select<Omit<ShopRow, "access_token"> & { access_token: string | null }>(
     "SELECT id, shop_domain, shop_name, access_token, scope, plan, installed_at, is_active FROM shops WHERE id = ? LIMIT 1",

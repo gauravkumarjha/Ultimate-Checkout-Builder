@@ -112,18 +112,28 @@ export async function registerWebhooks(shop: string, accessToken: string, appUrl
   const topics = ["APP_UNINSTALLED", "SHOP_UPDATE"] as const;
 
   for (const topic of topics) {
-    const result = await shopifyGraphQL<{
-      webhookSubscriptionCreate: {
-        webhookSubscription: { id: string; topic: string; callbackUrl: string } | null;
-        userErrors: Array<{ field: string[] | null; message: string }>;
-      };
-    }>(shop, accessToken, query, {
-      topic,
-      callbackUrl
-    });
+    try {
+      const result = await shopifyGraphQL<{
+        webhookSubscriptionCreate: {
+          webhookSubscription: { id: string; topic: string; callbackUrl: string } | null;
+          userErrors: Array<{ field: string[] | null; message: string }>;
+        };
+      }>(shop, accessToken, query, {
+        topic,
+        callbackUrl
+      });
 
-    if (result.webhookSubscriptionCreate.userErrors.length) {
-      throw new Error(result.webhookSubscriptionCreate.userErrors.map((err) => err.message).join("; "));
+      if (result.webhookSubscriptionCreate.userErrors.length) {
+        const messages = result.webhookSubscriptionCreate.userErrors.map((err) => err.message).join("; ");
+        if (!/address for this topic has already been taken/i.test(messages)) {
+          throw new Error(messages);
+        }
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!/address for this topic has already been taken/i.test(message)) {
+        throw error;
+      }
     }
   }
 }

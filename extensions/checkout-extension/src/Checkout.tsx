@@ -195,7 +195,13 @@ export default reactExtension("purchase.checkout.block.render", () => {
   const activeLanguage = normalizedConfig?.translations?.defaultLanguage ?? "en";
 
   if (!normalizedConfig) {
-    return <View />;
+    return (
+      <View>
+        <Banner status="warning" title="Checkout features not configured yet">
+          Open the app dashboard, enable a feature, then click Sync Checkout to load reviews, timer, fields, CSS, or translations here.
+        </Banner>
+      </View>
+    );
   }
 
   const localizedReviewTitle = resolveTranslation(
@@ -234,6 +240,9 @@ export default reactExtension("purchase.checkout.block.render", () => {
 
   return (
     <BlockStack spacing="loose">
+      <Banner status="info" title="Checkout Builder extension active">
+        This block is loaded from the checkout editor. If a section is enabled in the dashboard and synced, it appears below.
+      </Banner>
       {normalizedConfig.reviews?.enabled ? (
         <ReviewSection
           {...normalizedConfig.reviews}
@@ -257,6 +266,16 @@ export default reactExtension("purchase.checkout.block.render", () => {
           {normalizedConfig.payment.plusOnly
             ? "This shop uses a Plus-gated fallback for payment ordering."
             : "Shopify restrictions apply; using merchant display preferences only."}
+        </Banner>
+      ) : null}
+      {!normalizedConfig.reviews?.enabled &&
+      !normalizedConfig.timer?.enabled &&
+      !normalizedConfig.customFields?.enabled &&
+      !normalizedConfig.css?.enabled &&
+      !normalizedConfig.translations?.enabled &&
+      !normalizedConfig.payment?.enabled ? (
+        <Banner status="warning" title="No features enabled">
+          Turn on one or more modules in the dashboard and sync again to see live content here.
         </Banner>
       ) : null}
     </BlockStack>
