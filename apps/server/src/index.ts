@@ -50,6 +50,31 @@ async function main(): Promise<void> {
     return `<div class="notice ${toneClass}">${escapeHtml(message)}</div>`;
   }
 
+  app.get("/proxy", (req, res) => {
+    const shop = typeof req.query.shop === "string" ? req.query.shop.trim() : "";
+    res.type("html").send(`<!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <title>Checkout Builder Proxy</title>
+          <style>
+            body { margin:0; min-height:100vh; display:grid; place-items:center; background:linear-gradient(180deg,#fcfaf6 0%,#f4efe7 100%); color:#1f1a17; font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+            .card { width:min(760px, calc(100vw - 32px)); background:#fff; border:1px solid rgba(31,26,23,.12); border-radius:24px; padding:28px; box-shadow:0 22px 60px rgba(31,26,23,.12); }
+            h1 { margin:0 0 12px; font-size:clamp(32px, 4vw, 56px); line-height:1.02; letter-spacing:-.05em; }
+            p { margin:0; color:#6f665c; line-height:1.7; font-size:16px; }
+            code { background:#f4efe7; padding:2px 6px; border-radius:6px; }
+          </style>
+        </head>
+        <body>
+          <main class="card">
+            <h1>App Proxy is live</h1>
+            <p>Storefront proxy is configured for <code>/apps/checkout-builder-3</code> and served from <code>/proxy</code>. ${shop ? `Shop: <code>${escapeHtml(shop)}</code>` : ""}</p>
+          </main>
+        </body>
+      </html>`);
+  });
+
   async function getTableCount(tableName: "shops" | "settings" | "subscriptions"): Promise<number> {
     const rows = await select<{ count: number }>(`SELECT COUNT(*) AS count FROM ${tableName}`);
     return rows[0]?.count ?? 0;
@@ -146,14 +171,14 @@ async function main(): Promise<void> {
           <style>
             :root { color-scheme: light; --bg:#f4efe7; --panel:rgba(255,255,255,.9); --text:#1f1a17; --muted:#6f665c; --accent:#1f7a65; --warn:#c36d3d; --border:rgba(31,26,23,.12); --shadow:0 22px 60px rgba(31,26,23,.12); }
             * { box-sizing: border-box; }
-            body { margin:0; font-family: Arial, sans-serif; color:var(--text); background:linear-gradient(180deg,#fcfaf6 0%,var(--bg) 100%); }
+            body { margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--text); background:linear-gradient(180deg,#fcfaf6 0%,var(--bg) 100%); }
             .shell { max-width:1440px; margin:0 auto; padding:28px; }
             .hero { display:grid; grid-template-columns:1.2fr .8fr; gap:20px; margin-bottom:20px; }
             .card { background:var(--panel); border:1px solid var(--border); border-radius:24px; box-shadow:var(--shadow); padding:24px; }
             .stack { display:grid; gap:16px; }
-            .title { margin:0 0 8px; font-size:clamp(30px,4vw,54px); line-height:1.04; letter-spacing:-.04em; }
+            .title { margin:0 0 8px; font-size:clamp(34px,4.6vw,62px); line-height:1.02; letter-spacing:-.05em; font-weight:800; }
             .muted { color:var(--muted); }
-            .chip { display:inline-flex; align-items:center; gap:8px; border:0; border-radius:999px; padding:8px 12px; background:rgba(31,122,101,.1); color:var(--accent); font-size:13px; font:inherit; cursor:pointer; }
+            .chip { display:inline-flex; align-items:center; gap:8px; border:0; border-radius:999px; padding:8px 12px; background:rgba(31,122,101,.1); color:var(--accent); font-size:13px; font:inherit; cursor:pointer; font-weight:700; }
             .chip--ok { background:rgba(31,122,101,.14); color:var(--accent); }
             .chip--warn { background:rgba(195,109,61,.14); color:var(--warn); }
             .top { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
@@ -167,7 +192,7 @@ async function main(): Promise<void> {
             .tile--on { background:linear-gradient(180deg, rgba(31,122,101,.08), rgba(255,255,255,.95)); }
             .tile__head { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:10px; }
             .inline-form { margin:0; }
-            .section-title { margin:0; font-size:18px; }
+            .section-title { margin:0; font-size:20px; font-weight:800; letter-spacing:-.02em; }
             .plain-list { margin:0; padding-left:18px; color:var(--muted); display:grid; gap:8px; }
             .review-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; }
             .review-card img { width:100%; height:120px; object-fit:cover; border-radius:12px; margin-bottom:10px; }
@@ -228,6 +253,7 @@ async function main(): Promise<void> {
                   <p class="muted" style="margin:0;">This extension is added in the Shopify Checkout Editor. In this dashboard you configure it, enable it, and sync its data.</p>
                   <p class="muted" style="margin:0;">Shopify URL context: <code>${escapeHtml(shopDomain)}</code></p>
                   <p class="footer-note" style="margin:0;">Host: ${escapeHtml(host)}</p>
+                  <p class="footer-note" style="margin:0;">App proxy: <code>/apps/checkout-builder-3</code> via <code>/proxy</code></p>
                 </div>
               </div>
             </section>
@@ -373,9 +399,9 @@ async function main(): Promise<void> {
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <title>Ultimate Checkout Builder</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 0; min-height: 100vh; display: grid; place-items: center; background: linear-gradient(135deg, #f7f3ee, #fff); color: #1f1a17; }
+            body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; min-height: 100vh; display: grid; place-items: center; background: linear-gradient(135deg, #f7f3ee, #fff); color: #1f1a17; }
             .card { width: min(760px, calc(100vw - 32px)); background: #fff; border: 1px solid #ddd; border-radius: 20px; padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,.08); }
-            h1 { margin: 0 0 12px; }
+            h1 { margin: 0 0 12px; font-size: clamp(32px, 4vw, 56px); line-height: 1.05; letter-spacing: -0.05em; font-weight: 800; }
             p { line-height: 1.6; color: #6f665c; }
             form { display: grid; gap: 12px; margin-top: 18px; }
             input, button { font: inherit; padding: 12px 14px; border-radius: 12px; border: 1px solid #ccc; }

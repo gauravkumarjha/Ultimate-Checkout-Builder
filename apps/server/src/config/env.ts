@@ -6,9 +6,7 @@ import { z } from "zod";
 const envCandidates = [
   path.resolve(process.cwd(), ".env"),
   path.resolve(process.cwd(), "..", ".env"),
-  path.resolve(process.cwd(), "..", "..", ".env"),
-  path.resolve(process.cwd(), "apps/server/.env"),
-  path.resolve(process.cwd(), "apps/.env")
+  path.resolve(process.cwd(), "..", "..", ".env")
 ];
 
 for (const envPath of envCandidates) {
