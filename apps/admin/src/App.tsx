@@ -12,6 +12,7 @@ type LoadState = {
 };
 
 type SectionKey = "reviews" | "timer" | "fields" | "payments" | "css" | "translations";
+type PageKey = "dashboard" | SectionKey;
 const titles: Record<SectionKey, string> = {
   reviews: "Review Section",
   timer: "Countdown Timer",
@@ -30,10 +31,20 @@ const desc: Record<SectionKey, string> = {
 };
 
 const stepItems = [
-  "App dashboard manages settings, billing, and sync.",
+  "Welcome dashboard manages settings, billing, and sync.",
   "Checkout extension renders inside Shopify checkout editor.",
   "Save settings here, then sync to metafields for the extension.",
   "Use checkout editor to add the extension block after deploy."
+];
+
+const navItems: Array<{ key: PageKey; label: string; hint: string }> = [
+  { key: "dashboard", label: "Dashboard", hint: "Overview" },
+  { key: "reviews", label: "Reviews", hint: "Testimonials" },
+  { key: "timer", label: "Timer", hint: "Urgency" },
+  { key: "fields", label: "Fields", hint: "Inputs" },
+  { key: "payments", label: "Payments", hint: "Ordering" },
+  { key: "css", label: "CSS", hint: "Styles" },
+  { key: "translations", label: "Translations", hint: "Locales" }
 ];
 
 const createReview = () => ({
@@ -82,6 +93,7 @@ export function App({ appBridgeState }: { appBridgeState: AppBridgeState | null 
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const [page, setPage] = useState<PageKey>("dashboard");
   const [data, setData] = useState<LoadState>({ settings: defaultCheckoutSettings, isBillingActive: false });
 
   const refs = {
@@ -95,6 +107,10 @@ export function App({ appBridgeState }: { appBridgeState: AppBridgeState | null 
 
   const setSettings = (next: CheckoutSettings) => setData((current) => ({ ...current, settings: next }));
   const scrollTo = (key: SectionKey) => refs[key].current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const openSection = (key: SectionKey) => {
+    setPage(key);
+    window.requestAnimationFrame(() => scrollTo(key));
+  };
 
   useEffect(() => {
     if (!appBridgeState || !shop) {
@@ -158,11 +174,44 @@ export function App({ appBridgeState }: { appBridgeState: AppBridgeState | null 
 
   return (
     <div className="shell stack">
+      <div className="preview-card stack">
+        <div className="row" style={{ justifyContent: "space-between" }}>
+          <div className="stack" style={{ gap: 8 }}>
+            <div className="chip chip--ok">Checkout Builder ECS</div>
+            <strong style={{ fontSize: 22 }}>Welcome to your merchant dashboard.</strong>
+            <div className="muted">Manage features from cards, jump into each page, and keep checkout settings synced to the database.</div>
+          </div>
+          <div className="chip">{page === "dashboard" ? "Dashboard" : titles[page as SectionKey]}</div>
+        </div>
+      </div>
+
+      <section className="nav-grid">
+        {navItems.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            className={`nav-tile ${page === item.key ? "nav-tile--active" : ""}`}
+            onClick={() => {
+              setPage(item.key);
+              if (item.key !== "dashboard") {
+                openSection(item.key);
+              }
+              if (item.key === "dashboard") {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
+          >
+            <strong>{item.label}</strong>
+            <span>{item.hint}</span>
+          </button>
+        ))}
+      </section>
+
       <section className="hero">
         <div className="card card-pad stack">
           <div className="hero-top"><div className="chip">Multi-store checkout SaaS</div><div className={`chip ${data.isBillingActive ? "chip--ok" : "chip--warn"}`}>{data.isBillingActive ? "Billing active" : "Billing inactive"}</div></div>
           <h1 className="title">Configure checkout features from one merchant dashboard.</h1>
-          <p className="muted">Reviews, timer, custom fields, CSS, translations, and payment preferences live together in a single app.</p>
+          <p className="muted">Reviews, timer, custom fields, CSS, translations, and payment preferences live together in a single app, with each feature opening its own page section below.</p>
           <div className="preview-card stack">
             <strong>What lives where</strong>
             <ul className="plain-list">
@@ -170,8 +219,8 @@ export function App({ appBridgeState }: { appBridgeState: AppBridgeState | null 
             </ul>
           </div>
           <div className="row">
-            <button className="btn accent" onClick={saveSettings} disabled={saving}>Save and Preview</button>
-            <button className="btn secondary" onClick={syncMetafields} disabled={saving}>Sync to Metafields</button>
+            <button className="btn accent" onClick={saveSettings} disabled={saving}>Save to DB</button>
+            <button className="btn secondary" onClick={syncMetafields} disabled={saving}>Sync to Checkout</button>
             {!data.isBillingActive ? (
               <>
                 <div className="field" style={{ minWidth: 160 }}>
@@ -225,7 +274,7 @@ export function App({ appBridgeState }: { appBridgeState: AppBridgeState | null 
         <div className="grid-3">
           {(Object.keys(titles) as SectionKey[]).map((key) => {
             const enabled = key === "reviews" ? data.settings.reviews.enabled : key === "timer" ? data.settings.timer.enabled : key === "fields" ? data.settings.customFields.enabled : key === "payments" ? data.settings.payments.enabled : key === "css" ? data.settings.css.enabled : data.settings.translations.enabled;
-            return <CardButton key={key} title={titles[key]} description={desc[key]} enabled={enabled} onClick={() => scrollTo(key)} />;
+            return <CardButton key={key} title={titles[key]} description={desc[key]} enabled={enabled} onClick={() => openSection(key)} />;
           })}
         </div>
       </section>
