@@ -1,4 +1,4 @@
-import "@shopify/ui-extensions/checkout/preact";
+import type {} from "@shopify/ui-extensions/checkout/preact";
 import {createElement, render} from "preact";
 
 function Extension() {
